@@ -109,7 +109,12 @@ func ParseWithSpecialTableName(dest interface{}, cacheStore *sync.Map, namer Nam
 	if specialTableName != "" {
 		schemaCacheKey = fmt.Sprintf("%p-%s", modelType, specialTableName)
 	} else {
-		schemaCacheKey = modelType
+		modelValue := reflect.New(modelType)
+		tableName := namer.TableName(modelType.Name())
+		if tabler, ok := modelValue.Interface().(Tabler); ok {
+			tableName = tabler.TableName()
+		}
+		schemaCacheKey = fmt.Sprintf("%p-%s", modelType, tableName)
 	}
 
 	// Load exist schema cache, return if exists
